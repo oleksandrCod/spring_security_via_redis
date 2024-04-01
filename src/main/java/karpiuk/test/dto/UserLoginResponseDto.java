@@ -1,4 +1,4 @@
-package store.mybookstore.dto.user.records;
+package karpiuk.test.dto;
 
 public record UserLoginResponseDto(String token) {
 }

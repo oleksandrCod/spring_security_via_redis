@@ -1,10 +1,10 @@
-package store.mybookstore.dto.user;
+package karpiuk.test.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import karpiuk.test.validation.email.EmailValidation;
+import karpiuk.test.validation.password.FieldMatch;
 import lombok.Data;
-import store.mybookstore.validation.email.EmailValidation;
-import store.mybookstore.validation.password.FieldMatch;
 
 @Data
 @FieldMatch(field = "password",

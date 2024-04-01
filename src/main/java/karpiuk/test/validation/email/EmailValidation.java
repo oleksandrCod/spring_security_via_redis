@@ -1,4 +1,4 @@
-package store.mybookstore.validation.email;
+package karpiuk.test.validation.email;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

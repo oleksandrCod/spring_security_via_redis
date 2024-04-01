@@ -1,4 +1,4 @@
-package store.mybookstore.validation.password;
+package karpiuk.test.validation.password;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

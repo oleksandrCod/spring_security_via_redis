@@ -1,4 +1,4 @@
-package store.mybookstore.dto.user;
+package karpiuk.test.dto;
 
 import lombok.Data;
 

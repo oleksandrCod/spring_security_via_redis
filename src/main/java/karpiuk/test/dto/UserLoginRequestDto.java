@@ -1,8 +1,8 @@
-package store.mybookstore.dto.user.records;
+package karpiuk.test.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import store.mybookstore.validation.email.EmailValidation;
+import karpiuk.test.validation.email.EmailValidation;
 
 public record UserLoginRequestDto(
         @EmailValidation
