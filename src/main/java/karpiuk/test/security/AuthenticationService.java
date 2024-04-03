@@ -3,6 +3,7 @@ package karpiuk.test.security;
 import jakarta.servlet.http.HttpServletRequest;
 import karpiuk.test.dto.UserLoginRequestDto;
 import karpiuk.test.dto.UserLoginResponseDto;
+import karpiuk.test.exception.InvalidJwtTokenException;
 import karpiuk.test.service.BlackListingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,8 +17,9 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthenticationService {
     private static final String BEARER_TOKEN = "Bearer ";
-    private static final String AUTHORIZATION = "Authorization";
-    private static final int INDEX = 7;
+    private static final String HEADER_NAME = "Authorization";
+    private static final String INVALID_JWT_ERROR_MESSAGE =
+            "Provided JWT token is invalid or not allowed.";
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final BlackListingService blackListingService;
@@ -38,10 +40,10 @@ public class AuthenticationService {
     }
 
     private String getTokenFromHeader(HttpServletRequest req) {
-        String bearerToken = req.getHeader(AUTHORIZATION);
+        String bearerToken = req.getHeader(HEADER_NAME);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN)) {
-            return bearerToken.substring(INDEX);
+            return bearerToken.substring(BEARER_TOKEN.length());
         }
-        return null;
+        throw new InvalidJwtTokenException(INVALID_JWT_ERROR_MESSAGE);
     }
 }

@@ -11,14 +11,18 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "confirmationToken")
 public class ConfirmationToken {
     @Id
@@ -30,26 +34,15 @@ public class ConfirmationToken {
     private String confirmationToken;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
+    private Instant createdDate;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    public ConfirmationToken() {
-    }
-
     public ConfirmationToken(User user) {
         this.user = user;
-        createdDate = new Date();
+        createdDate = Instant.now();
         confirmationToken = UUID.randomUUID().toString();
-    }
-
-    public User getUserEntity() {
-        return user;
-    }
-
-    public void setUserEntity(User user) {
-        this.user = user;
     }
 }

@@ -5,9 +5,9 @@ import jakarta.validation.Valid;
 import karpiuk.test.dto.UserConfirmedRegistrationDto;
 import karpiuk.test.dto.UserLoginRequestDto;
 import karpiuk.test.dto.UserLoginResponseDto;
+import karpiuk.test.dto.UserLogoutResponseDto;
 import karpiuk.test.dto.UserRegistrationRequestDto;
 import karpiuk.test.dto.UserRegistrationResponseDto;
-import karpiuk.test.exception.RegistrationException;
 import karpiuk.test.security.AuthenticationService;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
+    private static final String LOGOUT_MESSAGE = "Logout successful!";
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
@@ -34,25 +34,24 @@ public class AuthController {
 
     @PostMapping("/register")
     public UserRegistrationResponseDto register(
-            @RequestBody @Valid UserRegistrationRequestDto requestDto)
-            throws RegistrationException {
+            @RequestBody @Valid UserRegistrationRequestDto requestDto) {
         return userService.register(requestDto);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
+    public ResponseEntity<UserLogoutResponseDto> logout(HttpServletRequest request) {
         authenticationService.logout(request);
-        return ResponseEntity.ok("Logged out successfully");
+        return ResponseEntity.ok(new UserLogoutResponseDto(LOGOUT_MESSAGE));
     }
 
-    @RequestMapping(value = "/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
+    @GetMapping("/confirm-account")
     public UserConfirmedRegistrationDto confirmUserAccount(
             @RequestParam("token") String confirmationToken) {
         return userService.confirmEmail(confirmationToken);
     }
 
     @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
+    public ResponseEntity<?> ping() {
         return ResponseEntity.ok("Pong!");
     }
 }

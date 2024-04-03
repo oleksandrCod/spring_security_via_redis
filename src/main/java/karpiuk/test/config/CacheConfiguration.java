@@ -18,11 +18,15 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 public class CacheConfiguration {
     public final static String BLACKLIST_CACHE_NAME = "jwt-black-list";
     @Value("${security.jwt.token.expire-length}")
-    private Long duration;
+    private Long jwtExpirationTimeLength;
+    @Value("${spring.security.redis.host-name}")
+    private String hostName;
+    @Value("${spring.security.redis.port.number}")
+    private int portNumber;
 
     @Bean
     LettuceConnectionFactory jedisConnectionFactory() {
-        return new LettuceConnectionFactory(new RedisStandaloneConfiguration("localhost", 8080));
+        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(hostName, portNumber));
     }
 
     @Bean
@@ -30,7 +34,7 @@ public class CacheConfiguration {
         return (builder) -> {
             Map<String, RedisCacheConfiguration> configurationMap = new HashMap<>();
             configurationMap.put(BLACKLIST_CACHE_NAME, RedisCacheConfiguration.defaultCacheConfig()
-                    .entryTtl(Duration.ofSeconds(duration)));
+                    .entryTtl(Duration.ofSeconds(jwtExpirationTimeLength)));
             builder.withInitialCacheConfigurations(configurationMap);
         };
     }
