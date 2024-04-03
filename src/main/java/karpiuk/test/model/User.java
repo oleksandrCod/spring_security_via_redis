@@ -48,16 +48,16 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
-    @Column(name = "enabled")
-    private boolean enabled;
+    @Column(name = "is_enabled")
+    private boolean isEnabled;
 
     @Column(nullable = false, name = "is_deleted")
     private boolean isDeleted;
 
-//    public User(boolean enabled) {
-//        super();
-//        this.enabled = enabled;
-//    }
+    public User(boolean enabled) {
+        super();
+        this.isEnabled = false;
+    }
 
     public User() {
     }
@@ -91,6 +91,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }

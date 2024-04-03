@@ -37,13 +37,13 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/auth/login",
-                                        "auth/register",
+                                        "/auth/register",
+                                        "/auth/confirm-account",
                                         "/v3/api-dogs/**",
                                         "/swagger-ui/**")
                                 .permitAll()
                                 .anyRequest()
-                                .authenticated()
-                )
+                                .authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
