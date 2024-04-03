@@ -8,5 +8,4 @@ public class UserRegistrationResponseDto {
     private String email;
     private String firstName;
     private String lastName;
-    private String shippingAddress;
 }

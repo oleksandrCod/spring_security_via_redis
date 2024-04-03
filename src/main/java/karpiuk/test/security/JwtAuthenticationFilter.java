@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import karpiuk.test.service.BlackListingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,20 +22,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_TOKEN = "Bearer ";
     private static final String AUTHORIZATION = "Authorization";
     private static final int INDEX = 7;
-    private static final String[] WHITE_LIST = {
-            "/auth/",
-            "/v3/api-docs",
-            "/swagger-ui/"};
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final BlackListingService blackListingService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req,
                                     HttpServletResponse resp,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = getTokenFromHeader(req);
 
-        if (token != null && jwtUtil.isValidToken(token)) {
+        String token = getTokenFromHeader(req);
+        String jwtBlackList = blackListingService.getJwtBlackList(token);
+
+        if (token != null && token.equals(jwtBlackList)) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.setContentType("application/json");
+            String errorMessage = "{\"error\": \"Your access token is invalid. Please log in.\"}";
+            resp.getWriter().write(errorMessage);
+            return;
+        }
+        if (token != null && jwtBlackList == null && jwtUtil.isValidToken(token)) {
             String username = jwtUtil.getUserName(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -42,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null,
                             userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
         }
         filterChain.doFilter(req, resp);
     }

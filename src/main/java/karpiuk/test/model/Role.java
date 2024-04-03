@@ -18,22 +18,23 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction(value = "is_deleted=false")
 @Table(name = "roles")
 public class Role {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "name", nullable = false, unique = true)
+    private RoleName roleName;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
     public Role(RoleName roleName) {
         this.roleName = roleName;
     }
 
     public Role() {
-
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Enumerated(EnumType.STRING)
-    @Column(name = "name", nullable = false, unique = true)
-    private RoleName roleName;
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
 
     public enum RoleName {
         ROLE_USER,

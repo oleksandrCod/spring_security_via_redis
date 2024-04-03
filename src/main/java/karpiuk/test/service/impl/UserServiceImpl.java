@@ -1,7 +1,6 @@
 package karpiuk.test.service.impl;
 
 import java.util.Set;
-import karpiuk.test.config.SecurityConfiguration;
 import karpiuk.test.dto.UserRegistrationRequestDto;
 import karpiuk.test.dto.UserRegistrationResponseDto;
 import karpiuk.test.exception.RegistrationException;
@@ -24,11 +23,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     @Value("${security.admin.email")
     private String adminEmail;
 
     @Override
-    public UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto) throws RegistrationException {
+    public UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto)
+            throws RegistrationException {
         if (userRepository.findUserByEmail(requestDto.getEmail()).isPresent()) {
             throw new RegistrationException(
                     "Unable to complete registration."
@@ -42,9 +43,9 @@ public class UserServiceImpl implements UserService {
         user.setLastName(requestDto.getLastName());
 
         if (user.getEmail().equals(adminEmail)) {
-            user.setRoles(Set.of(new Role(Role.RoleName.ROLE_ADMIN)));
+            user.setRoles(Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_ADMIN)));
         }
-        user.setRoles(Set.of(new Role(Role.RoleName.ROLE_USER)));
+        user.setRoles(Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_USER)));
         return userMapper.toResponseDto((userRepository.save(user)));
     }
 
