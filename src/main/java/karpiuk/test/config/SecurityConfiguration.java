@@ -37,6 +37,9 @@ public class SecurityConfiguration {
                                 .requestMatchers("/auth/login",
                                         "/auth/register",
                                         "/auth/confirm-account",
+                                        "/auth/forgot-password",
+                                        "/auth/reset-password",
+                                        "/auth/password-reset-success",
                                         "/v3/api-dogs/**",
                                         "/swagger-ui/**")
                                 .permitAll()

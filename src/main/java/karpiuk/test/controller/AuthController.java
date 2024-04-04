@@ -2,6 +2,10 @@ package karpiuk.test.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import karpiuk.test.dto.ForgotPasswordRequestDto;
+import karpiuk.test.dto.ForgotPasswordResponseDto;
+import karpiuk.test.dto.PasswordChangeRequestDto;
+import karpiuk.test.dto.ResetPasswordResponseDto;
 import karpiuk.test.dto.UserConfirmedRegistrationDto;
 import karpiuk.test.dto.UserLoginRequestDto;
 import karpiuk.test.dto.UserLoginResponseDto;
@@ -23,31 +27,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
-    private static final String LOGOUT_MESSAGE = "Logout successful!";
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public UserLoginResponseDto login(@RequestBody UserLoginRequestDto requestDto) {
+    public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto requestDto) {
         return authenticationService.authenticate(requestDto);
     }
 
     @PostMapping("/register")
-    public UserRegistrationResponseDto register(
+    public ResponseEntity<UserRegistrationResponseDto> register(
             @RequestBody @Valid UserRegistrationRequestDto requestDto) {
         return userService.register(requestDto);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<UserLogoutResponseDto> logout(HttpServletRequest request) {
-        authenticationService.logout(request);
-        return ResponseEntity.ok(new UserLogoutResponseDto(LOGOUT_MESSAGE));
+        return authenticationService.logout(request);
     }
 
     @GetMapping("/confirm-account")
-    public UserConfirmedRegistrationDto confirmUserAccount(
+    public ResponseEntity<UserConfirmedRegistrationDto> confirmUserAccount(
             @RequestParam("token") String confirmationToken) {
         return userService.confirmEmail(confirmationToken);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(@RequestBody ForgotPasswordRequestDto requestDto) {
+        return userService.forgotPasswordValidation(requestDto);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponseDto> resetPassword(@RequestBody PasswordChangeRequestDto requestDto) {
+        return userService.changePassword(requestDto);
     }
 
     @GetMapping("/ping")
