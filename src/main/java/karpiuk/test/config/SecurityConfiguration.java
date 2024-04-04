@@ -1,6 +1,7 @@
 package karpiuk.test.config;
 
 import karpiuk.test.security.JwtAuthenticationFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -29,6 +31,7 @@ public class SecurityConfiguration {
             HttpSecurity http,
             UserDetailsService userDetailsService,
             JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+        log.info("Creating SecurityFilterChain...");
         http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
@@ -50,7 +53,7 @@ public class SecurityConfiguration {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(userDetailsService);
-
+        log.info("SecurityFilterChain configured successfully.");
         return http.build();
     }
 

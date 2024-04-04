@@ -1,10 +1,14 @@
 package karpiuk.test.service.impl;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import karpiuk.test.dto.ForgotPasswordRequestDto;
 import karpiuk.test.dto.ForgotPasswordResponseDto;
 import karpiuk.test.dto.LoggedInUserInformationResponseDto;
 import karpiuk.test.dto.PasswordChangeRequestDto;
+import karpiuk.test.dto.ResendEmailConfirmationRequestDto;
+import karpiuk.test.dto.ResendEmailConfirmationResponseDto;
 import karpiuk.test.dto.ResetPasswordResponseDto;
 import karpiuk.test.dto.UserConfirmedRegistrationDto;
 import karpiuk.test.dto.UserRegistrationRequestDto;
@@ -23,13 +27,16 @@ import karpiuk.test.repository.UserRepository;
 import karpiuk.test.service.EmailService;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -60,6 +67,7 @@ public class UserServiceImpl implements UserService {
     private static final String SUCCESSFUL_PASSWORD_CHANGE = "Your password was change successfully";
     private static final String RESET_TOKEN_ERROR_MESSAGE =
             "Provided reset token is invalid or expired!";
+    private static final String EMAIL_RESEND_MESSAGE = "Confirmation email was send again!";
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -90,9 +98,26 @@ public class UserServiceImpl implements UserService {
         }
         user.setRoles(Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_USER)));
 
-        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken(user);
-
         userRepository.save(user);
+
+        return sendEmailConfirmation(user);
+    }
+
+    @Override
+    public ResponseEntity<ResendEmailConfirmationResponseDto> resendConfirmationEmail(
+            ResendEmailConfirmationRequestDto requestDto) {
+        User userByEmail = getUserByEmail(requestDto.email());
+        sendEmailConfirmation(userByEmail);
+        return ResponseEntity.ok(new ResendEmailConfirmationResponseDto(EMAIL_RESEND_MESSAGE));
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findUserByEmailIgnoreCase(email).orElseThrow(
+                () -> new UserNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE));
+    }
+
+    private ResponseEntity<UserRegistrationResponseDto> sendEmailConfirmation(User user) {
+        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken(user);
         emailTokenCacheService.addToCache(emailConfirmationToken);
 
         sendEmailToUser(user, emailConfirmationToken.getConfirmationToken(),
@@ -112,8 +137,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<ForgotPasswordResponseDto> forgotPasswordValidation(ForgotPasswordRequestDto requestDto) {
-        User user = userRepository.findUserByEmailIgnoreCase(requestDto.email())
-                .orElseThrow(() -> new UserNotFoundException(USER_IS_NOT_FOUND_ERROR_MESSAGE));
+        User user = getUserByEmail(requestDto.email());
 
         PasswordResetToken resetToken = new PasswordResetToken(user);
         resetPasswordTokenCacheService.addToCache(resetToken);
@@ -148,9 +172,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private User fetchUserFromResetToken(PasswordResetToken resetToken) {
-        return userRepository.findUserByEmailIgnoreCase(resetToken.getUser().getEmail())
-                .orElseThrow(() -> new UserNotFoundException(
-                        USER_NOT_FOUND_ERROR_MESSAGE));
+        return getUserByEmail(resetToken.getUser().getEmail());
     }
 
     private PasswordResetToken validateResetPasswordToken(String passwordResetToken) {
@@ -172,11 +194,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<List<LoggedInUserInformationResponseDto>> getAllUsers(Pageable pageable) {
+        List<LoggedInUserInformationResponseDto> users = userRepository.findAll(pageable).stream()
+                .map(userMapper::toLoggedInResponseDto)
+                .collect(Collectors.toList());
+        log.info("Returning {} users.", users.size());
+        return ResponseEntity.ok(users);
+    }
+
+    @Override
     public ResponseEntity<LoggedInUserInformationResponseDto> getLoggedInUser() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findUserByEmailIgnoreCase(userEmail)
-                .orElseThrow(
-                        () -> new UserNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE));
+        User user = getUserByEmail(userEmail);
         return ResponseEntity.ok(userMapper.toLoggedInResponseDto(user));
     }
 
