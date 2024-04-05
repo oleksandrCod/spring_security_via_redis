@@ -1,5 +1,6 @@
 package karpiuk.test.service.impl;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public class UserServiceImpl implements UserService {
     private static final String CONFIRMATION_EMAIL_SUBJECT =
             "Dear customer, please confirm your account registration!";
     private static final String CONFIRMATION_EMAIL_TEXT =
-            "To confirm your account, please use this identification code: ";
+            "To confirm your account, please click this url: ";
     private static final String EMAIL_CONFIRMATION_USER_MESSAGE = "Dear customer to proceed"
             + " your registration we sent an email to confirm it!";
     private static final String SUCCESSFUL_CONFIRMATION_MESSAGE =
@@ -57,16 +58,10 @@ public class UserServiceImpl implements UserService {
                     + " User may not register or logged in.";
     private static final String REGISTRATION_ERROR_MESSAGE =
             "Unable to complete registration. Input email already exist: ";
-    private static final String CONFIRMATION_USER_NOT_FOUND_ERROR_MESSAGE =
-            "User with input username not found!";
-    private static final String CONFIRMATION_TOKEN_ERROR_MESSAGE =
-            "Provided confirmation token is invalid or expired!";
-    private static final String USER_IS_NOT_FOUND_ERROR_MESSAGE = "Can't find user with input email!";
+
     private static final String RESET_PASSWORD_RESPONSE_MESSAGE =
             "Dear customer, to confirm password change we sent you an email!";
     private static final String SUCCESSFUL_PASSWORD_CHANGE = "Your password was change successfully";
-    private static final String RESET_TOKEN_ERROR_MESSAGE =
-            "Provided reset token is invalid or expired!";
     private static final String EMAIL_RESEND_MESSAGE = "Confirmation email was send again!";
 
     private final UserRepository userRepository;
@@ -77,129 +72,145 @@ public class UserServiceImpl implements UserService {
     private final EmailTokenCacheService emailTokenCacheService;
     private final ResetPasswordTokenCacheService resetPasswordTokenCacheService;
 
+    @Value("${spring.security.email-confirmation.url}")
+    private String confirmationUrl;
+
     @Value("${security.admin.email")
     private String adminEmail;
 
     @Override
+    @Transactional
     public ResponseEntity<UserRegistrationResponseDto> register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
-        if (userRepository.findUserByEmailIgnoreCase(requestDto.getEmail()).isPresent()) {
-            throw new RegistrationException(REGISTRATION_ERROR_MESSAGE + requestDto.getEmail());
-        }
+        validateUniqueEmail(requestDto.getEmail());
+        log.info("Registering user with email: {}", requestDto.getEmail());
+        User user = createUserFromRequest(requestDto);
+        saveUser(user);
+        log.info("User registered successfully with email: {}", user.getEmail());
+        return sendEmailConfirmation(user);
+    }
 
+    private void validateUniqueEmail(String email) throws RegistrationException {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new RegistrationException(REGISTRATION_ERROR_MESSAGE + email);
+        }
+    }
+
+    private User createUserFromRequest(UserRegistrationRequestDto requestDto) {
         User user = new User();
         user.setEmail(requestDto.getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         user.setFirstName(requestDto.getFirstName());
         user.setLastName(requestDto.getLastName());
+        setUserRoles(user);
+        return user;
+    }
 
-        if (user.getEmail().equals(adminEmail)) {
-            user.setRoles(Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_ADMIN)));
-        }
-        user.setRoles(Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_USER)));
+    private void setUserRoles(User user) {
+        Set<Role> roles = user.getEmail().equals(adminEmail)
+                ? Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_ADMIN))
+                : Set.of(roleRepository.getRoleByRoleName(Role.RoleName.ROLE_USER));
+        user.setRoles(roles);
+    }
 
+    private void saveUser(User user) {
         userRepository.save(user);
+    }
 
-        return sendEmailConfirmation(user);
+    private ResponseEntity<UserRegistrationResponseDto> sendEmailConfirmation(User user) {
+        log.info("Sending email confirmation to user: {}", user.getEmail());
+        EmailConfirmationToken emailConfirmationToken = createEmailConfirmationToken(user);
+        emailTokenCacheService.addToCache(emailConfirmationToken);
+        sendConfirmationEmail(user, emailConfirmationToken.getConfirmationToken());
+        return ResponseEntity.ok(new UserRegistrationResponseDto(EMAIL_CONFIRMATION_USER_MESSAGE));
+    }
+
+    private EmailConfirmationToken createEmailConfirmationToken(User user) {
+        log.debug("Creating email confirmation token for user: {}", user.getEmail());
+        return new EmailConfirmationToken(user);
+    }
+
+    private void sendConfirmationEmail(User user, String confirmationToken) {
+        SimpleMailMessage confirmationEmail = new SimpleMailMessage();
+        confirmationEmail.setTo(user.getEmail());
+        confirmationEmail.setSubject(CONFIRMATION_EMAIL_SUBJECT);
+        confirmationEmail.setText(CONFIRMATION_EMAIL_TEXT + confirmationUrl + confirmationToken);
+        emailService.sendEmail(confirmationEmail);
     }
 
     @Override
     public ResponseEntity<ResendEmailConfirmationResponseDto> resendConfirmationEmail(
             ResendEmailConfirmationRequestDto requestDto) {
-        User userByEmail = getUserByEmail(requestDto.email());
-        sendEmailConfirmation(userByEmail);
+        User user = getUserByEmail(requestDto.email());
+        sendEmailConfirmation(user);
         return ResponseEntity.ok(new ResendEmailConfirmationResponseDto(EMAIL_RESEND_MESSAGE));
-    }
-
-    private User getUserByEmail(String email) {
-        return userRepository.findUserByEmailIgnoreCase(email).orElseThrow(
-                () -> new UserNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE));
-    }
-
-    private ResponseEntity<UserRegistrationResponseDto> sendEmailConfirmation(User user) {
-        EmailConfirmationToken emailConfirmationToken = new EmailConfirmationToken(user);
-        emailTokenCacheService.addToCache(emailConfirmationToken);
-
-        sendEmailToUser(user, emailConfirmationToken.getConfirmationToken(),
-                CONFIRMATION_EMAIL_SUBJECT, CONFIRMATION_EMAIL_TEXT);
-
-        return ResponseEntity.ok(new UserRegistrationResponseDto(EMAIL_CONFIRMATION_USER_MESSAGE));
     }
 
     @Override
     public ResponseEntity<UserConfirmedRegistrationDto> confirmEmail(String confirmationToken) {
-        EmailConfirmationToken tokenFromCache = validateConfirmationToken(confirmationToken);
-        User user = fetchUserFromEmailToken(tokenFromCache);
+        EmailConfirmationToken token = validateConfirmationToken(confirmationToken);
+        User user = getUserByEmail(token.getUser().getEmail());
         enableUser(user);
-
         return ResponseEntity.ok(new UserConfirmedRegistrationDto(SUCCESSFUL_CONFIRMATION_MESSAGE));
     }
 
+    private EmailConfirmationToken validateConfirmationToken(String confirmationToken) {
+        return emailTokenCacheService.getEmailToken(confirmationToken);
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findUserByEmailIgnoreCase(email)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE));
+    }
+
+    private void enableUser(User user) {
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
     @Override
-    public ResponseEntity<ForgotPasswordResponseDto> forgotPasswordValidation(ForgotPasswordRequestDto requestDto) {
+    public ResponseEntity<ForgotPasswordResponseDto> forgotPasswordValidation(
+            ForgotPasswordRequestDto requestDto) {
         User user = getUserByEmail(requestDto.email());
-
-        PasswordResetToken resetToken = new PasswordResetToken(user);
+        PasswordResetToken resetToken = createPasswordResetToken(user);
         resetPasswordTokenCacheService.addToCache(resetToken);
-
-        sendEmailToUser(user, resetToken.getResetPasswordToken(),
-                RESET_PASSWORD_EMAIL_SUBJECT, RESET_PASSWORD_EMAIL_TEXT);
-
+        sendPasswordResetEmail(user, resetToken.getResetPasswordToken());
         return ResponseEntity.ok(new ForgotPasswordResponseDto(RESET_PASSWORD_RESPONSE_MESSAGE));
+    }
+
+    private PasswordResetToken createPasswordResetToken(User user) {
+        return new PasswordResetToken(user);
+    }
+
+    private void sendPasswordResetEmail(User user, String resetToken) {
+        SimpleMailMessage resetEmail = new SimpleMailMessage();
+        resetEmail.setTo(user.getEmail());
+        resetEmail.setSubject(RESET_PASSWORD_EMAIL_SUBJECT);
+        resetEmail.setText(RESET_PASSWORD_EMAIL_TEXT + resetToken);
+        emailService.sendEmail(resetEmail);
     }
 
     @Override
     public ResponseEntity<ResetPasswordResponseDto> changePassword(PasswordChangeRequestDto requestDto) {
         PasswordResetToken resetToken = validateResetPasswordToken(requestDto.resetToken());
-        User user = fetchUserFromResetToken(resetToken);
+        User user = getUserByEmail(resetToken.getUser().getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         userRepository.save(user);
         return ResponseEntity.ok(new ResetPasswordResponseDto(SUCCESSFUL_PASSWORD_CHANGE));
     }
 
-    private EmailConfirmationToken validateConfirmationToken(String confirmationToken) {
-        try {
-            return emailTokenCacheService.getEmailToken(confirmationToken);
-        } catch (EmailConfirmationTokenException e) {
-            throw new EmailConfirmationTokenException(CONFIRMATION_TOKEN_ERROR_MESSAGE);
-        }
-    }
-
-    private User fetchUserFromEmailToken(EmailConfirmationToken token) {
-        return userRepository.findUserByEmailIgnoreCase(token.getUser().getEmail())
-                .orElseThrow(() -> new UserNotFoundException(
-                        CONFIRMATION_USER_NOT_FOUND_ERROR_MESSAGE));
-    }
-
-    private User fetchUserFromResetToken(PasswordResetToken resetToken) {
-        return getUserByEmail(resetToken.getUser().getEmail());
-    }
-
-    private PasswordResetToken validateResetPasswordToken(String passwordResetToken) {
-        try {
-            return resetPasswordTokenCacheService.getPasswordResetToken(passwordResetToken);
-        } catch (InvalidPasswordResetToken e) {
-            throw new InvalidPasswordResetToken(RESET_TOKEN_ERROR_MESSAGE);
-        }
-    }
-
-    private void sendEmailToUser(User user, String token, String subject, String emailText) {
-        SimpleMailMessage confirmationEmail = new SimpleMailMessage();
-
-        confirmationEmail.setTo(user.getEmail());
-        confirmationEmail.setSubject(subject);
-        confirmationEmail.setText(emailText + token);
-
-        emailService.sendEmail(confirmationEmail);
+    private PasswordResetToken validateResetPasswordToken(String resetToken) {
+        return resetPasswordTokenCacheService.getPasswordResetToken(resetToken);
     }
 
     @Override
     public ResponseEntity<List<LoggedInUserInformationResponseDto>> getAllUsers(Pageable pageable) {
-        List<LoggedInUserInformationResponseDto> users = userRepository.findAll(pageable).stream()
+        List<User> users = userRepository.findAll(pageable).getContent();
+        List<LoggedInUserInformationResponseDto> dtos = users.stream()
                 .map(userMapper::toLoggedInResponseDto)
                 .collect(Collectors.toList());
-        log.info("Returning {} users.", users.size());
-        return ResponseEntity.ok(users);
+        log.info("Returning {} users.", dtos.size());
+        return ResponseEntity.ok(dtos);
     }
 
     @Override
@@ -207,10 +218,5 @@ public class UserServiceImpl implements UserService {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = getUserByEmail(userEmail);
         return ResponseEntity.ok(userMapper.toLoggedInResponseDto(user));
-    }
-
-    private void enableUser(User user) {
-        user.setEnabled(true);
-        userRepository.save(user);
     }
 }
