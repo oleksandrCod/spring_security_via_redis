@@ -15,18 +15,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 public interface UserService {
-    ResponseEntity<UserRegistrationResponseDto> register(UserRegistrationRequestDto requestDto);
+    UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto);
 
-    ResponseEntity<LoggedInUserInformationResponseDto> getLoggedInUser();
+    LoggedInUserInformationResponseDto getLoggedInUser();
 
-    ResponseEntity<UserConfirmedRegistrationDto> confirmEmail(String confirmationToke);
+    UserConfirmedRegistrationDto confirmEmail(String confirmationToke);
 
-    ResponseEntity<ForgotPasswordResponseDto> forgotPasswordValidation(ForgotPasswordRequestDto requestDto);
+    ForgotPasswordResponseDto forgotPasswordValidation(ForgotPasswordRequestDto requestDto);
 
-    ResponseEntity<ResetPasswordResponseDto> changePassword(PasswordChangeRequestDto requestDto);
+    ResetPasswordResponseDto changePassword(PasswordChangeRequestDto requestDto);
 
-    ResponseEntity<List<LoggedInUserInformationResponseDto>> getAllUsers(Pageable pageable);
+    List<LoggedInUserInformationResponseDto> getAllUsers(Pageable pageable);
 
-    ResponseEntity<ResendEmailConfirmationResponseDto> resendConfirmationEmail(
+    ResendEmailConfirmationResponseDto resendConfirmationEmail(
             ResendEmailConfirmationRequestDto requestDto);
 }

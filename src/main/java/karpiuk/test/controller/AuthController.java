@@ -18,6 +18,7 @@ import karpiuk.test.security.AuthenticationService;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,47 +38,48 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserLoginRequestDto requestDto) {
         log.info("Received login request for user: {}", requestDto.email());
-        return authenticationService.authenticate(requestDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(authenticationService.authenticate(requestDto));
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponseDto> register(
             @RequestBody @Valid UserRegistrationRequestDto requestDto) {
         log.info("Received registration request for user: {}", requestDto.getEmail());
-        return userService.register(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(requestDto));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<UserLogoutResponseDto> logout(HttpServletRequest request) {
         log.info("Received logout request.");
-        return authenticationService.logout(request);
+        return ResponseEntity.ok(authenticationService.logout(request));
     }
 
     @GetMapping("/confirm-account")
     public ResponseEntity<UserConfirmedRegistrationDto> confirmUserAccount(
             @RequestParam("token") String confirmationToken) {
         log.info("Received confirm account request with token: {}", confirmationToken);
-        return userService.confirmEmail(confirmationToken);
+        return ResponseEntity.ok(userService.confirmEmail(confirmationToken));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(
             @RequestBody ForgotPasswordRequestDto requestDto) {
         log.info("Received forgot password request for user: {}", requestDto.email());
-        return userService.forgotPasswordValidation(requestDto);
+
+        return ResponseEntity.status(HttpStatus.PROCESSING).body(userService.forgotPasswordValidation(requestDto));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<ResetPasswordResponseDto> resetPassword(
             @RequestBody PasswordChangeRequestDto requestDto) {
         log.info("Received reset password request");
-        return userService.changePassword(requestDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.changePassword(requestDto));
     }
 
     @GetMapping("/resend/email-confirmation")
     public ResponseEntity<ResendEmailConfirmationResponseDto> resendEmail(
             @RequestBody ResendEmailConfirmationRequestDto requestDto) {
-        return userService.resendConfirmationEmail(requestDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.resendConfirmationEmail(requestDto));
     }
 
     @GetMapping("/ping")

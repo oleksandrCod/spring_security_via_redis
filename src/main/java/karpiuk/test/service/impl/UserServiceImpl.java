@@ -14,10 +14,8 @@ import karpiuk.test.dto.ResetPasswordResponseDto;
 import karpiuk.test.dto.UserConfirmedRegistrationDto;
 import karpiuk.test.dto.UserRegistrationRequestDto;
 import karpiuk.test.dto.UserRegistrationResponseDto;
-import karpiuk.test.exception.EmailConfirmationTokenException;
-import karpiuk.test.exception.InvalidPasswordResetToken;
-import karpiuk.test.exception.RegistrationException;
-import karpiuk.test.exception.UserNotFoundException;
+import karpiuk.test.exception.exceptions.RegistrationException;
+import karpiuk.test.exception.exceptions.UserNotFoundException;
 import karpiuk.test.mapper.UserMapper;
 import karpiuk.test.model.EmailConfirmationToken;
 import karpiuk.test.model.PasswordResetToken;
@@ -80,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public ResponseEntity<UserRegistrationResponseDto> register(UserRegistrationRequestDto requestDto)
+    public UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto)
             throws RegistrationException {
         validateUniqueEmail(requestDto.getEmail());
         log.info("Registering user with email: {}", requestDto.getEmail());
@@ -117,12 +115,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    private ResponseEntity<UserRegistrationResponseDto> sendEmailConfirmation(User user) {
+    private UserRegistrationResponseDto sendEmailConfirmation(User user) {
         log.info("Sending email confirmation to user: {}", user.getEmail());
         EmailConfirmationToken emailConfirmationToken = createEmailConfirmationToken(user);
         emailTokenCacheService.addToCache(emailConfirmationToken);
         sendConfirmationEmail(user, emailConfirmationToken.getConfirmationToken());
-        return ResponseEntity.ok(new UserRegistrationResponseDto(EMAIL_CONFIRMATION_USER_MESSAGE));
+        return new UserRegistrationResponseDto(EMAIL_CONFIRMATION_USER_MESSAGE);
     }
 
     private EmailConfirmationToken createEmailConfirmationToken(User user) {
@@ -139,19 +137,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ResendEmailConfirmationResponseDto> resendConfirmationEmail(
+    public ResendEmailConfirmationResponseDto resendConfirmationEmail(
             ResendEmailConfirmationRequestDto requestDto) {
         User user = getUserByEmail(requestDto.email());
         sendEmailConfirmation(user);
-        return ResponseEntity.ok(new ResendEmailConfirmationResponseDto(EMAIL_RESEND_MESSAGE));
+        return new ResendEmailConfirmationResponseDto(EMAIL_RESEND_MESSAGE);
     }
 
     @Override
-    public ResponseEntity<UserConfirmedRegistrationDto> confirmEmail(String confirmationToken) {
+    public UserConfirmedRegistrationDto confirmEmail(String confirmationToken) {
         EmailConfirmationToken token = validateConfirmationToken(confirmationToken);
         User user = getUserByEmail(token.getUser().getEmail());
         enableUser(user);
-        return ResponseEntity.ok(new UserConfirmedRegistrationDto(SUCCESSFUL_CONFIRMATION_MESSAGE));
+        return new UserConfirmedRegistrationDto(SUCCESSFUL_CONFIRMATION_MESSAGE);
     }
 
     private EmailConfirmationToken validateConfirmationToken(String confirmationToken) {
@@ -169,13 +167,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ForgotPasswordResponseDto> forgotPasswordValidation(
+    public ForgotPasswordResponseDto forgotPasswordValidation(
             ForgotPasswordRequestDto requestDto) {
         User user = getUserByEmail(requestDto.email());
         PasswordResetToken resetToken = createPasswordResetToken(user);
         resetPasswordTokenCacheService.addToCache(resetToken);
         sendPasswordResetEmail(user, resetToken.getResetPasswordToken());
-        return ResponseEntity.ok(new ForgotPasswordResponseDto(RESET_PASSWORD_RESPONSE_MESSAGE));
+        return new ForgotPasswordResponseDto(RESET_PASSWORD_RESPONSE_MESSAGE);
     }
 
     private PasswordResetToken createPasswordResetToken(User user) {
@@ -191,12 +189,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ResetPasswordResponseDto> changePassword(PasswordChangeRequestDto requestDto) {
+    public ResetPasswordResponseDto changePassword(PasswordChangeRequestDto requestDto) {
         PasswordResetToken resetToken = validateResetPasswordToken(requestDto.resetToken());
         User user = getUserByEmail(resetToken.getUser().getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         userRepository.save(user);
-        return ResponseEntity.ok(new ResetPasswordResponseDto(SUCCESSFUL_PASSWORD_CHANGE));
+        return new ResetPasswordResponseDto(SUCCESSFUL_PASSWORD_CHANGE);
     }
 
     private PasswordResetToken validateResetPasswordToken(String resetToken) {
@@ -204,19 +202,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<List<LoggedInUserInformationResponseDto>> getAllUsers(Pageable pageable) {
+    public List<LoggedInUserInformationResponseDto> getAllUsers(Pageable pageable) {
         List<User> users = userRepository.findAll(pageable).getContent();
         List<LoggedInUserInformationResponseDto> dtos = users.stream()
                 .map(userMapper::toLoggedInResponseDto)
-                .collect(Collectors.toList());
+                .toList();
         log.info("Returning {} users.", dtos.size());
-        return ResponseEntity.ok(dtos);
+
     }
 
     @Override
-    public ResponseEntity<LoggedInUserInformationResponseDto> getLoggedInUser() {
+    public LoggedInUserInformationResponseDto getLoggedInUser() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = getUserByEmail(userEmail);
-        return ResponseEntity.ok(userMapper.toLoggedInResponseDto(user));
+        return userMapper.toLoggedInResponseDto(user);
     }
 }

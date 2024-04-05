@@ -128,7 +128,13 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.sol4k</groupId>
+            <artifactId>sol4k</artifactId>
+            <version>0.4.1</version>
+        </dependency>
     </dependencies>
+
     <!--    <dependencyManagement>-->
     <!--        <dependencies>-->
     <!--            <dependency>-->

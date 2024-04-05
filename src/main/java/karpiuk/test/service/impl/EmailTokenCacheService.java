@@ -3,7 +3,7 @@ package karpiuk.test.service.impl;
 import java.util.HashSet;
 import java.util.Set;
 import karpiuk.test.config.CacheConfiguration;
-import karpiuk.test.exception.EmailConfirmationTokenException;
+import karpiuk.test.exception.exceptions.EmailConfirmationTokenException;
 import karpiuk.test.model.EmailConfirmationToken;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;

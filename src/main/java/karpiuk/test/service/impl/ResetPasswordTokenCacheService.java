@@ -3,7 +3,7 @@ package karpiuk.test.service.impl;
 import java.util.HashSet;
 import java.util.Set;
 import karpiuk.test.config.CacheConfiguration;
-import karpiuk.test.exception.InvalidPasswordResetToken;
+import karpiuk.test.exception.exceptions.InvalidPasswordResetToken;
 import karpiuk.test.model.PasswordResetToken;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;

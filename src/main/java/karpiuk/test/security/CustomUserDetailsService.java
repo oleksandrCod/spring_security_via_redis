@@ -1,6 +1,6 @@
 package karpiuk.test.security;
 
-import karpiuk.test.exception.UserNotFoundException;
+import karpiuk.test.exception.exceptions.UserNotFoundException;
 import karpiuk.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import karpiuk.test.dto.UserLoginRequestDto;
 import karpiuk.test.dto.UserLoginResponseDto;
 import karpiuk.test.dto.UserLogoutResponseDto;
-import karpiuk.test.exception.InvalidJwtTokenException;
+import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
 import karpiuk.test.service.BlackListingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,20 +27,20 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final BlackListingService blackListingService;
 
-    public ResponseEntity<UserLoginResponseDto> authenticate(UserLoginRequestDto requestDto) {
+    public UserLoginResponseDto authenticate(UserLoginRequestDto requestDto) {
         final Authentication authentication = authenticationManager
                 .authenticate(
                         new UsernamePasswordAuthenticationToken(requestDto.email(),
                                 requestDto.password()));
 
         String jwtToken = jwtUtil.generateToken(authentication.getName());
-        return ResponseEntity.ok(new UserLoginResponseDto(jwtToken));
+        return new UserLoginResponseDto(jwtToken);
     }
 
-    public ResponseEntity<UserLogoutResponseDto> logout(HttpServletRequest request) {
+    public UserLogoutResponseDto logout(HttpServletRequest request) {
         blackListingService.blackListJwt(getTokenFromHeader(request));
         SecurityContextHolder.clearContext();
-        return ResponseEntity.ok(new UserLogoutResponseDto(LOGOUT_MESSAGE));
+        return new UserLogoutResponseDto(LOGOUT_MESSAGE);
     }
 
     private String getTokenFromHeader(HttpServletRequest req) {
