@@ -20,21 +20,4 @@ public class KarpiukJavaTestApplication {
     public static void main(String[] args) {
         SpringApplication.run(KarpiukJavaTestApplication.class, args);
     }
-
-    @Bean
-    public CommandLineRunner commandLineRunner(RoleRepository roleRepository,
-                                               UserRepository userRepository,
-                                               PasswordEncoder encoder) {
-        User user = new User(true);
-        user.setPassword(encoder.encode("password"));
-        user.setEmail("alexkarpiuk99@gmail.com");
-        user.setFirstName("Bob");
-        user.setLastName("Bobson");
-        return args -> {
-            Role save = roleRepository.save(new Role(Role.RoleName.ROLE_USER));
-            user.setRoles(Set.of(save));
-
-            userRepository.save(user);
-        };
-    }
 }

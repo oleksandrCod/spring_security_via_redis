@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toLoggedInResponseDto)
                 .toList();
         log.info("Returning {} users.", dtos.size());
-
+        return dtos;
     }
 
     @Override
