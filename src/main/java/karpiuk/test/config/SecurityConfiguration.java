@@ -1,7 +1,7 @@
 package karpiuk.test.config;
 
 import karpiuk.test.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,18 +19,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableMethodSecurity
-@RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration {
-    private final UserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthFilter;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            UserDetailsService userDetailsService,
+            JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+        log.info("Creating SecurityFilterChain...");
         http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
@@ -39,6 +40,9 @@ public class SecurityConfiguration {
                                 .requestMatchers("/auth/login",
                                         "/auth/register",
                                         "/auth/confirm-account",
+                                        "/auth/forgot-password",
+                                        "/auth/reset-password",
+                                        "/auth/password-reset-success",
                                         "/v3/api-dogs/**",
                                         "/swagger-ui/**")
                                 .permitAll()
@@ -49,7 +53,7 @@ public class SecurityConfiguration {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(userDetailsService);
-
+        log.info("SecurityFilterChain configured successfully.");
         return http.build();
     }
 

@@ -12,13 +12,13 @@ public class BlackListingService {
 
     private final Set<String> blacklistedTokens = new HashSet<>();
 
-    @CachePut(CacheConfiguration.BLACKLIST_CACHE_NAME)
+    @CachePut(CacheConfiguration.JWT_BLACK_LIST_CACHE_NAME)
     public String blackListJwt(String jwt) {
         blacklistedTokens.add(jwt);
         return jwt;
     }
 
-    @Cacheable(value = CacheConfiguration.BLACKLIST_CACHE_NAME, unless = "#result == null")
+    @Cacheable(value = CacheConfiguration.JWT_BLACK_LIST_CACHE_NAME, unless = "#result == null")
     public String getJwtBlackList(String jwt) {
         return blacklistedTokens.contains(jwt) ? jwt : null;
     }
