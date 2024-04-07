@@ -1,6 +1,6 @@
 package karpiuk.test.dto;
 
-public record LoggedInUserInformationResponseDto(
+public record LoggedInUserResponse(
         String firstName,
         String lastName) {
 }

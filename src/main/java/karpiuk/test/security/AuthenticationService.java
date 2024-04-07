@@ -1,13 +1,14 @@
 package karpiuk.test.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import karpiuk.test.dto.UserLoginRequestDto;
-import karpiuk.test.dto.UserLoginResponseDto;
-import karpiuk.test.dto.UserLogoutResponseDto;
+import karpiuk.test.dto.UserLoginRequest;
+import karpiuk.test.dto.UserLoginResponse;
+import karpiuk.test.dto.UserLogoutResponse;
 import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
-import karpiuk.test.service.BlackListingService;
+import karpiuk.test.exception.exceptions.RefreshTokenException;
+import karpiuk.test.model.User;
+import karpiuk.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,39 +16,52 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private static final String BEARER_TOKEN = "Bearer ";
-    private static final String HEADER_NAME = "Authorization";
     private static final String LOGOUT_MESSAGE = "Logout successful!";
-    private static final String INVALID_JWT_ERROR_MESSAGE =
-            "Provided JWT token is invalid or not allowed.";
-    private final JwtUtil jwtUtil;
+    private static final String INVALID_TOKEN_MESSAGE = "Refresh token is not valid";
+
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
-    private final BlackListingService blackListingService;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider tokenProvider;
 
-    public UserLoginResponseDto authenticate(UserLoginRequestDto requestDto) {
-        final Authentication authentication = authenticationManager
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(requestDto.email(),
-                                requestDto.password()));
+    public UserLoginResponse authenticate(UserLoginRequest request) {
 
-        String jwtToken = jwtUtil.generateToken(authentication.getName());
-        return new UserLoginResponseDto(jwtToken);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()));
+
+        return jwtTokenProvider.generateTokens(authentication);
     }
 
-    public UserLogoutResponseDto logout(HttpServletRequest request) {
-        blackListingService.blackListJwt(getTokenFromHeader(request));
+    public UserLogoutResponse logout(String refreshToken) {
+        validateRefreshToken(refreshToken);
+        tokenProvider.invalidateToken(refreshToken);
+
         SecurityContextHolder.clearContext();
-        return new UserLogoutResponseDto(LOGOUT_MESSAGE);
+
+        return new UserLogoutResponse(LOGOUT_MESSAGE);
     }
 
-    private String getTokenFromHeader(HttpServletRequest req) {
-        String bearerToken = req.getHeader(HEADER_NAME);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN)) {
-            return bearerToken.substring(BEARER_TOKEN.length());
+    public UserLoginResponse refresh(String refreshToken) {
+        validateRefreshToken(refreshToken);
+
+        String userEmail = tokenProvider.getUserNameFromJwtToken(refreshToken);
+
+        User user = userRepository.findByEmailIgnoreCaseAndFetchRoles(userEmail).orElseThrow(
+                () -> new RefreshTokenException(INVALID_TOKEN_MESSAGE));
+
+        return tokenProvider.refreshTokens(user, refreshToken);
+    }
+
+    private void validateRefreshToken(String token) {
+        if (!tokenProvider.validateRefreshToken(token)) {
+            throw new RefreshTokenException(INVALID_TOKEN_MESSAGE);
         }
-        throw new InvalidJwtTokenException(INVALID_JWT_ERROR_MESSAGE);
     }
 }

@@ -38,8 +38,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/auth/login",
-                                        "/auth/register",
+                                        "/auth/signup",
                                         "/auth/confirm-account",
+                                        "/auth/resend/email-confirmation",
                                         "/auth/forgot-password",
                                         "/auth/reset-password",
                                         "/auth/password-reset-success",

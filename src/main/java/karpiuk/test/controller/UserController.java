@@ -1,7 +1,8 @@
 package karpiuk.test.controller;
 
 import java.util.List;
-import karpiuk.test.dto.LoggedInUserInformationResponseDto;
+
+import karpiuk.test.dto.LoggedInUserResponse;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +22,15 @@ public class UserController {
     private final UserService userService;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/logged-user")
-    public ResponseEntity<LoggedInUserInformationResponseDto> getLoggedUser() {
-        log.info("Received getLoggedUser request");
-        return ResponseEntity.status(HttpStatus.FOUND).body(userService.getLoggedInUser());
-    }
-
     @GetMapping
-    public ResponseEntity<List<LoggedInUserInformationResponseDto>> getAllUsers(Pageable pageable) {
+    public ResponseEntity<List<LoggedInUserResponse>> getAllUsers(Pageable pageable) {
         log.info("Received get all users request");
         return ResponseEntity.status(HttpStatus.FOUND).body(userService.getAllUsers(pageable));
+    }
+
+    @GetMapping("/ping")
+    public ResponseEntity<?> ping() {
+        log.info("Received ping request!");
+        return ResponseEntity.ok("Pong!");
     }
 }

@@ -10,7 +10,7 @@ import lombok.Data;
 @FieldMatch(field = "password",
         fieldMatch = "repeatPassword",
         message = "Input passwords must be equals")
-public class UserRegistrationRequestDto {
+public class UserRegistrationRequest {
     @Email
     private String email;
 

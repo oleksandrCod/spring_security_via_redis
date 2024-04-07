@@ -1,32 +1,23 @@
 package karpiuk.test.service;
 
 import java.util.List;
-import karpiuk.test.dto.ForgotPasswordRequestDto;
-import karpiuk.test.dto.ForgotPasswordResponseDto;
-import karpiuk.test.dto.LoggedInUserInformationResponseDto;
-import karpiuk.test.dto.PasswordChangeRequestDto;
-import karpiuk.test.dto.ResendEmailConfirmationRequestDto;
-import karpiuk.test.dto.ResendEmailConfirmationResponseDto;
-import karpiuk.test.dto.ResetPasswordResponseDto;
-import karpiuk.test.dto.UserConfirmedRegistrationDto;
-import karpiuk.test.dto.UserRegistrationRequestDto;
-import karpiuk.test.dto.UserRegistrationResponseDto;
+import karpiuk.test.dto.ForgotPasswordRequest;
+import karpiuk.test.dto.ForgotPasswordResponse;
+import karpiuk.test.dto.LoggedInUserResponse;
+import karpiuk.test.dto.PasswordChangeRequest;
+import karpiuk.test.dto.ResendEmailConfirmationRequest;
+import karpiuk.test.dto.ResendEmailConfirmationResponse;
+import karpiuk.test.dto.ResetPasswordResponse;
+import karpiuk.test.dto.UserConfirmedRegistration;
+import karpiuk.test.dto.UserRegistrationRequest;
+import karpiuk.test.dto.RegistrationResponse;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 public interface UserService {
-    UserRegistrationResponseDto register(UserRegistrationRequestDto requestDto);
+    RegistrationResponse register(UserRegistrationRequest requestDto);
 
-    LoggedInUserInformationResponseDto getLoggedInUser();
+    LoggedInUserResponse getLoggedInUser();
 
-    UserConfirmedRegistrationDto confirmEmail(String confirmationToke);
+    List<LoggedInUserResponse> getAllUsers(Pageable pageable);
 
-    ForgotPasswordResponseDto forgotPasswordValidation(ForgotPasswordRequestDto requestDto);
-
-    ResetPasswordResponseDto changePassword(PasswordChangeRequestDto requestDto);
-
-    List<LoggedInUserInformationResponseDto> getAllUsers(Pageable pageable);
-
-    ResendEmailConfirmationResponseDto resendConfirmationEmail(
-            ResendEmailConfirmationRequestDto requestDto);
 }

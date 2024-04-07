@@ -4,11 +4,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import karpiuk.test.exception.exceptions.EmailConfirmationTokenException;
-import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
-import karpiuk.test.exception.exceptions.InvalidPasswordResetToken;
-import karpiuk.test.exception.exceptions.RegistrationException;
-import karpiuk.test.exception.exceptions.UserNotFoundException;
+
+import karpiuk.test.exception.exceptions.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -55,18 +52,41 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return e.getDefaultMessage();
     }
 
-    @ExceptionHandler({
-            EmailConfirmationTokenException.class,
-            InvalidJwtTokenException.class,
-            InvalidPasswordResetToken.class,
-            RegistrationException.class,
-            UserNotFoundException.class
-    })
-    public ResponseEntity<Object> handleCustomException(Exception ex, WebRequest request) {
+    @ExceptionHandler(EmailConfirmationTokenException.class)
+    public ResponseEntity<Object> handleEmailConfirmationTokenException(EmailConfirmationTokenException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidJwtTokenException.class)
+    public ResponseEntity<Object> handleInvalidJwtTokenException(InvalidJwtTokenException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidPasswordResetToken.class)
+    public ResponseEntity<Object> handleInvalidPasswordResetToken(InvalidPasswordResetToken ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<Object> handleRegistrationException(RegistrationException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<Object> handleRefreshTokenException(RefreshTokenException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<Object> createResponse(Exception ex, HttpStatus status) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put(TIMESTAMP, LocalDateTime.now());
-        body.put(STATUS, HttpStatus.BAD_REQUEST);
+        body.put(STATUS, status);
         body.put(ERROR, ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(body, status);
     }
 }
