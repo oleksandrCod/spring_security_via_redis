@@ -7,7 +7,7 @@ import karpiuk.test.validation.password.FieldMatch;
 @FieldMatch(field = "password",
         fieldMatch = "repeatPassword",
         message = "Input passwords must be equals")
-public record PasswordChangeRequestDto(
+public record PasswordChangeRequest(
         @NotBlank
         @Size(min = 6, max = 100)
         String password,
