@@ -46,7 +46,6 @@ public class RedisUtil {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(redisHost);
         config.setPort(redisPort);
-        config.setPassword(redisPassword);
         config.setDatabase(db.ordinal());
 
         JedisConnectionFactory factory = new JedisConnectionFactory(config);

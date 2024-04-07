@@ -15,6 +15,7 @@ import javax.crypto.SecretKey;
 import karpiuk.test.dto.UserLoginResponse;
 import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
 import karpiuk.test.model.User;
+import karpiuk.test.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,11 +33,16 @@ public class JwtTokenProvider {
     private Long jwtExpiration;
     @Value("${spring.security.refresh.token.expire-length}")
     private Long refreshTokenExpiration;
-    private Key secret;
+    private Key jwtSecret;
+    private Key refreshSecret;
 
-    public JwtTokenProvider(@Value("${spring.security.jwt.token.secret-key}") String secretKey, StringRedisTemplate redis) {
-        secret = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-        this.redis = redis;
+    public JwtTokenProvider(@Value("${spring.security.jwt.token.secret-key}") String secretKeyJwt,
+                            @Value("${spring.security.refresh.token.secret-key}")
+                            String secretKeyRefresh,
+                            RedisUtil redisUtil) {
+        refreshSecret = Keys.hmacShaKeyFor(secretKeyRefresh.getBytes(StandardCharsets.UTF_8));
+        jwtSecret = Keys.hmacShaKeyFor(secretKeyJwt.getBytes(StandardCharsets.UTF_8));
+        this.redis = redisUtil.templateForDb(RedisUtil.RedisDb.SECURITY);
     }
 
     public UserLoginResponse generateTokens(Authentication authentication) {
@@ -49,7 +55,7 @@ public class JwtTokenProvider {
                 .subject(userPrincipal.getEmail())
                 .issuedAt(now)
                 .expiration(expiryDateForAccessToken)
-                .signWith(secret)
+                .signWith(jwtSecret)
                 .compact();
 
         Date expiryDateForRefreshToken = new Date(now.getTime() + refreshTokenExpiration);
@@ -57,7 +63,7 @@ public class JwtTokenProvider {
                 .subject(userPrincipal.getEmail())
                 .issuedAt(now)
                 .expiration(expiryDateForRefreshToken)
-                .signWith(secret)
+                .signWith(refreshSecret)
                 .compact();
         return new UserLoginResponse(accessToken, refreshToken);
     }
@@ -77,7 +83,7 @@ public class JwtTokenProvider {
     public boolean isValidToken(String accessToken) {
         try {
             Jws<Claims> claimsJws = Jwts.parser()
-                    .verifyWith((SecretKey) secret)
+                    .verifyWith((SecretKey) jwtSecret)
                     .build()
                     .parseSignedClaims(accessToken);
             return !claimsJws.getPayload().getExpiration().before(new Date());
@@ -97,7 +103,7 @@ public class JwtTokenProvider {
 
     private <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = Jwts.parser()
-                .verifyWith((SecretKey) secret)
+                .verifyWith((SecretKey) jwtSecret)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
