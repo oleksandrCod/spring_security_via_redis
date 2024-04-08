@@ -33,15 +33,15 @@ public class JwtTokenProvider {
     private Long jwtExpiration;
     @Value("${spring.security.refresh.token.expire-length}")
     private Long refreshTokenExpiration;
-    private Key jwtSecret;
-    private Key refreshSecret;
+    private final Key jwtSecret;
+    private final Key refreshSecret;
 
     public JwtTokenProvider(@Value("${spring.security.jwt.token.secret-key}") String secretKeyJwt,
-                            @Value("${spring.security.refresh.token.secret-key}")
-                            String secretKeyRefresh,
+                            @Value("${spring.security.refresh.token.secret-key}") String secretKeyRefresh,
                             RedisUtil redisUtil) {
         refreshSecret = Keys.hmacShaKeyFor(secretKeyRefresh.getBytes(StandardCharsets.UTF_8));
         jwtSecret = Keys.hmacShaKeyFor(secretKeyJwt.getBytes(StandardCharsets.UTF_8));
+
         this.redis = redisUtil.templateForDb(RedisUtil.RedisDb.SECURITY);
     }
 

@@ -1,8 +1,8 @@
 package karpiuk.test.solanawallet;
 
-import karpiuk.test.dto.solona.AirDropResponseDto;
-import karpiuk.test.dto.solona.SendingTransactionResponseDto;
-import karpiuk.test.dto.solona.WalletBalanceResponseDto;
+import karpiuk.test.dto.solana.AirDropResponseDto;
+import karpiuk.test.dto.solana.SendingTransactionResponseDto;
+import karpiuk.test.dto.solana.WalletBalanceResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.sol4k.Base58;
 import org.sol4k.Connection;

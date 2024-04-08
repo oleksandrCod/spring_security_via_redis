@@ -5,7 +5,7 @@ import karpiuk.test.dto.ForgotPasswordResponse;
 import karpiuk.test.dto.PasswordChangeRequest;
 import karpiuk.test.dto.ResetPasswordResponse;
 
-public interface PasswordService {
+public interface ForgotPasswordHandler {
     ForgotPasswordResponse forgotPasswordValidation(ForgotPasswordRequest requestDto);
 
     ResetPasswordResponse changePassword(PasswordChangeRequest requestDto);

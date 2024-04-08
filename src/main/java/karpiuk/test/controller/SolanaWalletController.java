@@ -1,8 +1,8 @@
 package karpiuk.test.controller;
 
-import karpiuk.test.dto.solona.AirDropResponseDto;
-import karpiuk.test.dto.solona.SendingTransactionResponseDto;
-import karpiuk.test.dto.solona.WalletBalanceResponseDto;
+import karpiuk.test.dto.solana.AirDropResponseDto;
+import karpiuk.test.dto.solana.SendingTransactionResponseDto;
+import karpiuk.test.dto.solana.WalletBalanceResponseDto;
 import karpiuk.test.solanawallet.SolanaWalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

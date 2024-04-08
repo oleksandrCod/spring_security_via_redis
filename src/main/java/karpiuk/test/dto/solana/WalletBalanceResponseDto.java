@@ -1,4 +1,4 @@
-package karpiuk.test.dto.solona;
+package karpiuk.test.dto.solana;
 
 import java.math.BigInteger;
 

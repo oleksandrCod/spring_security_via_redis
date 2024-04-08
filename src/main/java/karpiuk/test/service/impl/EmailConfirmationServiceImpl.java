@@ -4,11 +4,10 @@ import karpiuk.test.dto.RegistrationResponse;
 import karpiuk.test.dto.ResendEmailConfirmationRequest;
 import karpiuk.test.dto.ResendEmailConfirmationResponse;
 import karpiuk.test.dto.UserConfirmedRegistration;
-import karpiuk.test.exception.exceptions.UserNotFoundException;
 import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import karpiuk.test.service.EmailConfirmationService;
-import karpiuk.test.service.EmailService;
+import karpiuk.test.service.EmailSender;
 import karpiuk.test.util.HashUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
-import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @Slf4j
@@ -35,7 +35,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     private final UserRepository userRepository;
     private final HashUtil hashUtil;
     private final StringRedisTemplate redis;
-    private final EmailService emailService;
+    private final EmailSender emailSender;
     private final ServiceHelper serviceHelper;
 
     @Value("${spring.security.email-confirmation.url}")
@@ -45,9 +45,10 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
     @Override
     public RegistrationResponse sendEmailConfirmation(User user) {
-        log.info("Sending email confirmation to user: {}", user.getEmail());
+        String email = user.getEmail();
+        log.info("Sending email confirmation to user: {}", email);
         String token = createEmailConfirmationToken(user);
-        redis.opsForValue().set(token, user.getEmail(), emailTokenExpirationLength, TimeUnit.MILLISECONDS);
+        redis.opsForValue().set(token, email, emailTokenExpirationLength, SECONDS);
         sendConfirmationEmail(user, token);
         return new RegistrationResponse(EMAIL_CONFIRMATION_USER_MESSAGE);
     }
@@ -62,7 +63,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
         confirmationEmail.setTo(user.getEmail());
         confirmationEmail.setSubject(CONFIRMATION_EMAIL_SUBJECT);
         confirmationEmail.setText(CONFIRMATION_EMAIL_TEXT + confirmationUrl + confirmationToken);
-        emailService.sendEmail(confirmationEmail);
+        emailSender.sendEmail(confirmationEmail);
     }
 
     @Override
@@ -88,7 +89,6 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
         }
         return userEmailFromToken;
     }
-
 
 
     private void enableUser(User user) {
