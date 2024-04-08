@@ -18,17 +18,21 @@ import static java.util.Objects.requireNonNull;
 @Component
 public class RedisUtil {
 
+    private static final String REDIS_CONNECTION_EXCEPTION_MESSAGE =
+            "Failed to connect to Redis database. Please recheck Redis settings";
+    private static final String PONG = "PONG";
     private final String redisHost;
     private final int redisPort;
-    private final String redisPassword;
     private final Map<RedisDb, StringRedisTemplate> templateByDb;
 
-    public RedisUtil(@Value("${spring.data.redis.host}") String redisHost,
-                     @Value("${spring.data.redis.port}") int redisPort,
-                     @Value("${spring.data.redis.password}") String redisPassword) {
+    public RedisUtil(
+            @Value("${spring.data.redis.host}")
+            String redisHost,
+            @Value("${spring.data.redis.port}")
+            int redisPort
+    ) {
         this.redisHost = redisHost;
         this.redisPort = redisPort;
-        this.redisPassword = redisPassword;
         this.templateByDb = new EnumMap<>(RedisDb.class);
         stream(RedisDb.values()).forEach(this::createTemplate);
     }
@@ -64,9 +68,9 @@ public class RedisUtil {
         templateByDb.forEach((db, template) -> {
             String result = requireNonNull(template.getConnectionFactory())
                     .getConnection().ping();
-            if (!"PONG".equals(result)) {
+            if (!PONG.equals(result)) {
                 throw new BeanInitializationException(
-                        "Failed to connect to Redis database. Please recheck Redis settings");
+                        REDIS_CONNECTION_EXCEPTION_MESSAGE);
             }
         });
     }

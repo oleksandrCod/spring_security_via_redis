@@ -1,19 +1,16 @@
 package karpiuk.test.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import karpiuk.test.dto.*;
 import karpiuk.test.security.AuthenticationService;
 import karpiuk.test.service.EmailConfirmationService;
-import karpiuk.test.service.PasswordService;
+import karpiuk.test.service.ForgotPasswordHandler;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @RestController
@@ -23,7 +20,7 @@ public class AuthController {
     private final UserService userService;
     private final AuthenticationService authenticationService;
     private final EmailConfirmationService confirmationService;
-    private final PasswordService passwordService;
+    private final ForgotPasswordHandler forgotPasswordHandler;
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest requestDto) {
@@ -67,7 +64,7 @@ public class AuthController {
         log.info("Received forgot password request for user: {}", requestDto.email());
 
         return ResponseEntity.status(HttpStatus.PROCESSING)
-                .body(passwordService.forgotPasswordValidation(requestDto));
+                .body(forgotPasswordHandler.forgotPasswordValidation(requestDto));
     }
 
     @PostMapping("/reset-password")
@@ -77,7 +74,7 @@ public class AuthController {
         log.info("Received reset password request");
 
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(passwordService.changePassword(requestDto));
+                .body(forgotPasswordHandler.changePassword(requestDto));
     }
 
     @GetMapping("/resend/email-confirmation")
@@ -100,7 +97,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<UserLoginResponse> refresh(String refreshToken) {
+    public ResponseEntity<UserLoginResponse> refresh(@RequestBody String refreshToken) {
         return ResponseEntity.ok().body(authenticationService.refresh(refreshToken));
     }
 }

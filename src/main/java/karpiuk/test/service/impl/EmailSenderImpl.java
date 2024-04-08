@@ -1,6 +1,6 @@
 package karpiuk.test.service.impl;
 
-import karpiuk.test.service.EmailService;
+import karpiuk.test.service.EmailSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class EmailServiceImpl implements EmailService {
+public class EmailSenderImpl implements EmailSender {
 
     private final JavaMailSender javaMailSender;
 
