@@ -20,7 +20,7 @@ public class SolanaWalletController {
 
     @GetMapping("/balance")
     public ResponseEntity<WalletBalanceResponseDto> getWalletBalance() {
-        return ResponseEntity.ok(solanaWalletService.printWalletBalance());
+        return ResponseEntity.ok(solanaWalletService.printWalletBalanceOfCurrentUser());
     }
 
     @GetMapping("/airdrop")

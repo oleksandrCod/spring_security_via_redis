@@ -18,9 +18,4 @@ public class SolanaConfiguration {
     public Connection getConnection() {
         return new Connection(solanaApiUrl);
     }
-
-    @Bean
-    public PublicKey getPublicKey() {
-        return new PublicKey(solanaPublicKey);
-    }
 }

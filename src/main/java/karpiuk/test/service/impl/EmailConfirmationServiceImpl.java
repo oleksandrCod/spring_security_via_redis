@@ -1,9 +1,9 @@
 package karpiuk.test.service.impl;
 
-import karpiuk.test.dto.RegistrationResponse;
-import karpiuk.test.dto.ResendEmailConfirmationRequest;
-import karpiuk.test.dto.ResendEmailConfirmationResponse;
-import karpiuk.test.dto.UserConfirmedRegistration;
+import karpiuk.test.dto.response.RegistrationResponse;
+import karpiuk.test.dto.request.ResendEmailConfirmationRequest;
+import karpiuk.test.dto.response.ResendEmailConfirmationResponse;
+import karpiuk.test.dto.response.UserConfirmedRegistrationResponse;
 import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import karpiuk.test.service.EmailConfirmationService;
@@ -46,9 +46,11 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     @Override
     public RegistrationResponse sendEmailConfirmation(User user) {
         String email = user.getEmail();
-        log.info("Sending email confirmation to user: {}", email);
         String token = createEmailConfirmationToken(user);
         redis.opsForValue().set(token, email, emailTokenExpirationLength, SECONDS);
+
+        log.info("Sending email confirmation to user: {}", email);
+
         sendConfirmationEmail(user, token);
         return new RegistrationResponse(EMAIL_CONFIRMATION_USER_MESSAGE);
     }
@@ -69,30 +71,51 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     @Override
     public ResendEmailConfirmationResponse resendConfirmationEmail(
             ResendEmailConfirmationRequest requestDto) {
+
+        log.info("Resending confirmation email to user with email: {}", requestDto.email());
+
         User user = serviceHelper.getUserByEmail(requestDto.email());
+
         sendEmailConfirmation(user);
+
+        log.info("Confirmation email resent to user with email: {}", requestDto.email());
+
         return new ResendEmailConfirmationResponse(EMAIL_RESEND_MESSAGE);
     }
 
     @Override
-    public UserConfirmedRegistration confirmEmail(String confirmationToken) {
+    public UserConfirmedRegistrationResponse confirmEmail(String confirmationToken) {
+        log.info("Confirming email with token: {}", confirmationToken);
+
         String userEmail = validateConfirmationToken(confirmationToken);
         User user = serviceHelper.getUserByEmail(userEmail);
         enableUser(user);
-        return new UserConfirmedRegistration(SUCCESSFUL_CONFIRMATION_MESSAGE);
+
+        log.info("Email confirmed for user: {}", userEmail);
+
+        return new UserConfirmedRegistrationResponse(SUCCESSFUL_CONFIRMATION_MESSAGE);
     }
 
     private String validateConfirmationToken(String confirmationToken) {
+        log.info("Validating confirmation token: {}", confirmationToken);
+
         String userEmailFromToken = redis.opsForValue().get(confirmationToken);
+
         if (userEmailFromToken != null) {
             serviceHelper.getUserByEmail(userEmailFromToken);
         }
+        log.info("Confirmation token validated: {}", confirmationToken);
+
         return userEmailFromToken;
     }
 
 
     private void enableUser(User user) {
+        log.info("Enabling user: {}", user.getEmail());
+
         user.setEnabled(true);
         userRepository.save(user);
+
+        log.info("User enabled: {}", user.getEmail());
     }
 }

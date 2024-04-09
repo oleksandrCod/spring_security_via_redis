@@ -1,7 +1,19 @@
 package karpiuk.test.controller;
 
 import jakarta.validation.Valid;
-import karpiuk.test.dto.*;
+import karpiuk.test.dto.request.ForgotPasswordRequest;
+import karpiuk.test.dto.request.PasswordChangeRequest;
+import karpiuk.test.dto.request.ResendEmailConfirmationRequest;
+import karpiuk.test.dto.request.UserLoginRequest;
+import karpiuk.test.dto.request.UserRegistrationRequest;
+import karpiuk.test.dto.response.ForgotPasswordResponse;
+import karpiuk.test.dto.response.LoggedInUserResponse;
+import karpiuk.test.dto.response.RegistrationResponse;
+import karpiuk.test.dto.response.ResendEmailConfirmationResponse;
+import karpiuk.test.dto.response.ResetPasswordResponse;
+import karpiuk.test.dto.response.UserConfirmedRegistrationResponse;
+import karpiuk.test.dto.response.UserLoginResponse;
+import karpiuk.test.dto.response.UserLogoutResponse;
 import karpiuk.test.security.AuthenticationService;
 import karpiuk.test.service.EmailConfirmationService;
 import karpiuk.test.service.ForgotPasswordHandler;
@@ -49,7 +61,7 @@ public class AuthController {
     }
 
     @GetMapping("/confirm-account")
-    public ResponseEntity<UserConfirmedRegistration> confirmUserAccount(
+    public ResponseEntity<UserConfirmedRegistrationResponse> confirmUserAccount(
             @RequestParam("token") String confirmationToken) {
 
         log.info("Received confirm account request with token: {}", confirmationToken);

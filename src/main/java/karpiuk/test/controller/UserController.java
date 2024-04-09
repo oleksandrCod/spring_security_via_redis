@@ -2,7 +2,7 @@ package karpiuk.test.controller;
 
 import java.util.List;
 
-import karpiuk.test.dto.LoggedInUserResponse;
+import karpiuk.test.dto.response.LoggedInUserResponse;
 import karpiuk.test.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
