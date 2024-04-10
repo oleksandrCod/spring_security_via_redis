@@ -19,6 +19,9 @@ databaseChangeLog:
                   name: last_name
                   value: Doe
               - column:
+                  name: private_solana_key
+                  value: 2WGcYYau2gLu2DUq68SxxXQmCgi77n8hFqqLNbNyg6Xfh2m3tvg8LF5Lgh69CFDux41LUKV1ak1ERHUqiBZnyshz
+              - column:
                   name: is_enabled
                   value: '1'
               - column:

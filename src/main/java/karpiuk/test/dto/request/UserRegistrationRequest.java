@@ -11,6 +11,7 @@ import lombok.Data;
         fieldMatch = "repeatPassword",
         message = "Input passwords must be equals")
 public class UserRegistrationRequest {
+
     @Email
     private String email;
 
