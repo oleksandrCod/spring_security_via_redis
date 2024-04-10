@@ -2,7 +2,6 @@ package karpiuk.test.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,10 +12,9 @@ import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,7 +22,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @SQLDelete(sql = "UPDATE users SET is_deleted=TRUE WHERE id=?")
 @SQLRestriction(value = "is_deleted=false")
@@ -49,7 +48,7 @@ public class User implements UserDetails {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))

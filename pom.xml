@@ -23,6 +23,14 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
@@ -101,11 +109,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-maven-plugin</artifactId>
-            <version>${liquibase.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.sol4k</groupId>
             <artifactId>sol4k</artifactId>
             <version>${solana-api-version}</version>
@@ -113,14 +116,6 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-maven-plugin</artifactId>
-                <version>${liquibase.version}</version>
-                <configuration>
-                    <propertyFile>src/main/resources/liquibase.properties</propertyFile>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

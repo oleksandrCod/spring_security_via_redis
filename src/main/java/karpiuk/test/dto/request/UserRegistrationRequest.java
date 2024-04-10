@@ -4,9 +4,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import karpiuk.test.validation.password.FieldMatch;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @FieldMatch(field = "password",
         fieldMatch = "repeatPassword",
         message = "Input passwords must be equals")

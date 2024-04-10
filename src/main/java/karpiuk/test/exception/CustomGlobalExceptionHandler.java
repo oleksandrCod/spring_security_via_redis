@@ -4,8 +4,13 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import karpiuk.test.exception.exceptions.*;
+import karpiuk.test.exception.exceptions.EmailConfirmationTokenException;
+import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
+import karpiuk.test.exception.exceptions.InvalidPasswordResetToken;
+import karpiuk.test.exception.exceptions.RefreshTokenException;
+import karpiuk.test.exception.exceptions.RegistrationException;
+import karpiuk.test.exception.exceptions.UserAuthenticationException;
+import karpiuk.test.exception.exceptions.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -42,16 +47,6 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return new ResponseEntity<>(body, headers, status);
     }
 
-    private String getErrorMessage(ObjectError e) {
-        if (e instanceof FieldError) {
-            String field = ((FieldError) e).getField();
-            String message = e.getDefaultMessage();
-            return field + " " + message;
-
-        }
-        return e.getDefaultMessage();
-    }
-
     @ExceptionHandler(EmailConfirmationTokenException.class)
     public ResponseEntity<Object> handleEmailConfirmationTokenException(EmailConfirmationTokenException ex, WebRequest request) {
         return createResponse(ex, HttpStatus.BAD_REQUEST);
@@ -85,6 +80,16 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler(UserAuthenticationException.class)
     public ResponseEntity<Object> handleRefreshTokenException(UserAuthenticationException ex, WebRequest request) {
         return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    private String getErrorMessage(ObjectError e) {
+        if (e instanceof FieldError) {
+            String field = ((FieldError) e).getField();
+            String message = e.getDefaultMessage();
+            return field + " " + message;
+
+        }
+        return e.getDefaultMessage();
     }
 
     private ResponseEntity<Object> createResponse(Exception ex, HttpStatus status) {
