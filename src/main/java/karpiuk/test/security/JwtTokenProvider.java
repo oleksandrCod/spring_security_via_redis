@@ -79,7 +79,8 @@ public class JwtTokenProvider {
 
         log.info("Tokens generated successfully for user: {}", userPrincipal.getEmail());
 
-        redis.opsForValue().set(hashUtil.hashToSha256(refreshToken), userPrincipal.getEmail(), refreshTokenExpiration, SECONDS);
+        redis.opsForValue().set(hashUtil.hashToSha256(refreshToken),
+                userPrincipal.getEmail(), refreshTokenExpiration, SECONDS);
 
         return new UserLoginResponse(accessToken, refreshToken);
     }

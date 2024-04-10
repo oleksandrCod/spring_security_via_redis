@@ -1,9 +1,11 @@
 package karpiuk.test.service.impl;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Set;
+import karpiuk.test.dto.request.UserRegistrationRequest;
 import karpiuk.test.dto.response.LoggedInUserResponse;
 import karpiuk.test.dto.response.RegistrationResponse;
-import karpiuk.test.dto.request.UserRegistrationRequest;
 import karpiuk.test.exception.exceptions.RegistrationException;
 import karpiuk.test.mapper.UserMapper;
 import karpiuk.test.model.Role;
@@ -18,9 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service

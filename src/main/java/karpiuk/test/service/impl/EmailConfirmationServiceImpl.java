@@ -1,7 +1,7 @@
 package karpiuk.test.service.impl;
 
-import karpiuk.test.dto.response.RegistrationResponse;
 import karpiuk.test.dto.request.ResendEmailConfirmationRequest;
+import karpiuk.test.dto.response.RegistrationResponse;
 import karpiuk.test.dto.response.ResendEmailConfirmationResponse;
 import karpiuk.test.dto.response.UserConfirmedRegistrationResponse;
 import karpiuk.test.model.User;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service

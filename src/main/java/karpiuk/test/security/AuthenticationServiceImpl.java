@@ -9,7 +9,6 @@ import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import karpiuk.test.util.HashUtil;
 import karpiuk.test.util.RedisUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,8 +1,8 @@
 package karpiuk.test.service.impl;
 
 import karpiuk.test.dto.request.ForgotPasswordRequest;
-import karpiuk.test.dto.response.ForgotPasswordResponse;
 import karpiuk.test.dto.request.PasswordChangeRequest;
+import karpiuk.test.dto.response.ForgotPasswordResponse;
 import karpiuk.test.dto.response.ResetPasswordResponse;
 import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;

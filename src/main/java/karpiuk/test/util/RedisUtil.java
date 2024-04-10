@@ -1,6 +1,8 @@
 package karpiuk.test.util;
 
 import jakarta.annotation.PostConstruct;
+import java.util.EnumMap;
+import java.util.Map;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -8,10 +10,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
-
-import java.util.EnumMap;
-import java.util.Map;
-
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 
