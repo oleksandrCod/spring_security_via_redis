@@ -1,4 +1,4 @@
-package karpiuk.test.dto;
+package karpiuk.test.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,4 +1,4 @@
-package karpiuk.test.dto;
+package karpiuk.test.dto.response;
 
 public record LoggedInUserResponse(
         String firstName,

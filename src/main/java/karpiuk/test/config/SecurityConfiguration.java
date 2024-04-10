@@ -31,30 +31,37 @@ public class SecurityConfiguration {
             HttpSecurity http,
             UserDetailsService userDetailsService,
             JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+
         log.info("Creating SecurityFilterChain...");
+
         http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers("/auth/login",
+                                .requestMatchers(
+                                        "/users/ping",
+                                        "/auth/login",
                                         "/auth/signup",
                                         "/auth/confirm-account",
                                         "/auth/resend/email-confirmation",
                                         "/auth/forgot-password",
                                         "/auth/reset-password",
                                         "/auth/password-reset-success",
-                                        "/v3/api-dogs/**",
-                                        "/swagger-ui/**")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated())
+                                        "/auth/refresh",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-resources/**",
+                                        "/swagger-ui.html").permitAll()
+                                .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .userDetailsService(userDetailsService);
+
         log.info("SecurityFilterChain configured successfully.");
+
         return http.build();
     }
 

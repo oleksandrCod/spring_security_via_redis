@@ -10,7 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmailIgnoreCase(String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE LOWER(u.email) = LOWER(:email) AND u.isDeleted = false")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE LOWER(u.email) = LOWER(:email) AND u.isDeleted = FALSE")
     Optional<User> findByEmailIgnoreCaseAndFetchRoles(@Param("email") String email);
 }
 

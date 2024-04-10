@@ -1,9 +1,9 @@
 package karpiuk.test.service;
 
-import karpiuk.test.dto.RegistrationResponse;
-import karpiuk.test.dto.ResendEmailConfirmationRequest;
-import karpiuk.test.dto.ResendEmailConfirmationResponse;
-import karpiuk.test.dto.UserConfirmedRegistration;
+import karpiuk.test.dto.response.RegistrationResponse;
+import karpiuk.test.dto.request.ResendEmailConfirmationRequest;
+import karpiuk.test.dto.response.ResendEmailConfirmationResponse;
+import karpiuk.test.dto.response.UserConfirmedRegistrationResponse;
 import karpiuk.test.model.User;
 
 public interface EmailConfirmationService {
@@ -11,5 +11,5 @@ public interface EmailConfirmationService {
 
     ResendEmailConfirmationResponse resendConfirmationEmail(ResendEmailConfirmationRequest requestDto);
 
-    UserConfirmedRegistration confirmEmail(String confirmationToken);
+    UserConfirmedRegistrationResponse confirmEmail(String confirmationToken);
 }

@@ -35,6 +35,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: private_solana_key
+                  type: varchar(255)
+              - column:
                   name: is_enabled
                   type: boolean
               - column:

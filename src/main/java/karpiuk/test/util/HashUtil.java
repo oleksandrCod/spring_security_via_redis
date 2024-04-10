@@ -18,4 +18,14 @@ public class HashUtil {
             throw new RuntimeException("Failed to calculate SHA-256 hash", e);
         }
     }
+
+    public String hashToSha256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(encodedHash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to calculate SHA-256 hash", e);
+        }
+    }
 }

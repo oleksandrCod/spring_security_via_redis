@@ -82,6 +82,11 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return createResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(UserAuthenticationException.class)
+    public ResponseEntity<Object> handleRefreshTokenException(UserAuthenticationException ex, WebRequest request) {
+        return createResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
     private ResponseEntity<Object> createResponse(Exception ex, HttpStatus status) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put(TIMESTAMP, LocalDateTime.now());
