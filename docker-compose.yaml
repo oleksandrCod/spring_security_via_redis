@@ -1,0 +1,51 @@
+version: '3.7'
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - "${POSTGRES_LOCAL_PORT}:${POSTGRES_DOCKER_PORT}"
+  redis:
+    container_name: redis
+    image: redis:7.2.4
+    restart: always
+    ports:
+      - "${REDIS_LOCAL_PORT}:${REDIS_DOCKER_PORT}"
+    expose:
+      - "${REDIS_LOCAL_PORT}"
+    environment:
+      - REDIS_PROTECTED_MODE=no
+  app:
+    container_name: my-application
+    depends_on:
+      - postgres
+      - redis
+    image: karpo99/test:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "${SPRING_LOCAL_PORT}:${SPRING_DOCKER_PORT}"
+      - "${DEBUG_PORT}:${DEBUG_PORT}"
+    links:
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_DOCKER_PORT}/${POSTGRES_DATABASE}?serverTimeZone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_SECURITY_JWT_TOKEN_SECRET_KEY: ${JWT_SECRET_KEY}
+      SPRING_SECURITY_REFRESH_TOKEN_SECRET_KEY: ${REFRESH_TOKEN_SECRET_KEY}
+      #      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      #      SPRING_DATA_REDIS_PORT: ${REDIS_LOCAL_PORT}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SOLANA_API_URL: ${SOLANA_API_URL}
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
