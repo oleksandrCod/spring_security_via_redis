@@ -10,14 +10,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Setter
 @Entity
-@SQLDelete(sql = "UPDATE users SET is_deleted=TRUE WHERE id=?")
-@SQLRestriction(value = "is_deleted=false")
 @Table(name = "roles")
 public class Role {
     @Id
@@ -27,16 +23,6 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(name = "name", nullable = false, unique = true)
     private RoleName roleName;
-
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
-
-    public Role(RoleName roleName) {
-        this.roleName = roleName;
-    }
-
-    public Role() {
-    }
 
     public enum RoleName {
         ROLE_USER,

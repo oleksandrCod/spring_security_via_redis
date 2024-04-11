@@ -1,6 +1,6 @@
 package karpiuk.test.service.impl;
 
-import karpiuk.test.exception.exceptions.UserNotFoundException;
+import karpiuk.test.exception.handler.exceptions.UserNotFoundException;
 import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

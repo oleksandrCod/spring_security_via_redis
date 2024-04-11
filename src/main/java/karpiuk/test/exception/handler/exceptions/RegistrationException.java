@@ -1,4 +1,4 @@
-package karpiuk.test.exception.exceptions;
+package karpiuk.test.exception.handler.exceptions;
 
 public class RegistrationException extends RuntimeException {
     public RegistrationException(String message) {

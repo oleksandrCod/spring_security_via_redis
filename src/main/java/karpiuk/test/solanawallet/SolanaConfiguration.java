@@ -8,11 +8,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SolanaConfiguration {
 
-    @Value("${solana.api.url}")
-    private String solanaApiUrl;
-
     @Bean
-    public Connection getConnection() {
+    public Connection getConnection(
+            @Value("${solana.api.url}")
+            String solanaApiUrl) {
         return new Connection(solanaApiUrl);
     }
 }

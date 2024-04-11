@@ -11,11 +11,11 @@ import java.util.Date;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import karpiuk.test.dto.response.UserLoginResponse;
-import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
-import karpiuk.test.exception.exceptions.InvalidRefreshTokenException;
+import karpiuk.test.exception.handler.exceptions.InvalidJwtTokenException;
+import karpiuk.test.exception.handler.exceptions.InvalidRefreshTokenException;
 import karpiuk.test.model.User;
-import karpiuk.test.util.HashUtil;
-import karpiuk.test.util.RedisUtil;
+import karpiuk.test.util.HashProvider;
+import karpiuk.test.util.RedisProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,21 +37,21 @@ public class JwtTokenProvider {
     private Long jwtExpiration;
     @Value("${spring.security.refresh.token.expire-length}")
     private Long refreshTokenExpiration;
-    private HashUtil hashUtil;
+    private HashProvider hashProvider;
     private final Key jwtSecret;
     private final Key refreshSecret;
 
     public JwtTokenProvider(
             @Value("${spring.security.jwt.token.secret-key}") String secretKeyJwt,
             @Value("${spring.security.refresh.token.secret-key}") String secretKeyRefresh,
-            RedisUtil redisUtil,
-            HashUtil hashUtil) {
+            RedisProvider redisProvider,
+            HashProvider hashProvider) {
 
         refreshSecret = Keys.hmacShaKeyFor(secretKeyRefresh.getBytes(StandardCharsets.UTF_8));
         jwtSecret = Keys.hmacShaKeyFor(secretKeyJwt.getBytes(StandardCharsets.UTF_8));
 
-        this.hashUtil = hashUtil;
-        this.redis = redisUtil.templateForDb(RedisUtil.RedisDb.SECURITY);
+        this.hashProvider = hashProvider;
+        this.redis = redisProvider.templateForDb(RedisProvider.RedisDb.SECURITY);
     }
 
     public UserLoginResponse generateTokens(Authentication authentication) {
@@ -79,7 +79,7 @@ public class JwtTokenProvider {
 
         log.info("Tokens generated successfully for user: {}", userPrincipal.getEmail());
 
-        redis.opsForValue().set(hashUtil.hashToSha256(refreshToken),
+        redis.opsForValue().set(hashProvider.hashToSha256(refreshToken),
                 userPrincipal.getEmail(), refreshTokenExpiration, SECONDS);
 
         return new UserLoginResponse(accessToken, refreshToken);
@@ -88,7 +88,7 @@ public class JwtTokenProvider {
     public UserLoginResponse refreshTokens(User user, String refreshToken) {
         log.info("Refreshing tokens for user: {}", user.getEmail());
 
-        redis.delete(hashUtil.hashToSha256(refreshToken));
+        redis.delete(hashProvider.hashToSha256(refreshToken));
 
         log.info("Tokens refreshed successfully for user: {}", user.getEmail());
 
@@ -98,7 +98,7 @@ public class JwtTokenProvider {
     public boolean validateRefreshToken(String refreshToken) {
         log.info("Validating refresh token");
 
-        if (redis.opsForValue().get(hashUtil.hashToSha256(refreshToken)) == null) {
+        if (redis.opsForValue().get(hashProvider.hashToSha256(refreshToken)) == null) {
 
             log.info("Refresh token not found in Redis");
 
@@ -144,7 +144,7 @@ public class JwtTokenProvider {
     public void invalidateToken(String refreshToken) {
         log.info("Invalidating refresh token");
 
-        redis.delete(hashUtil.hashToSha256(refreshToken));
+        redis.delete(hashProvider.hashToSha256(refreshToken));
 
         log.info("Refresh token invalidated successfully");
     }

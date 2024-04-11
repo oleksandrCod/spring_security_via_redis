@@ -3,12 +3,12 @@ package karpiuk.test.security;
 import karpiuk.test.dto.request.UserLoginRequest;
 import karpiuk.test.dto.response.UserLoginResponse;
 import karpiuk.test.dto.response.UserLogoutResponse;
-import karpiuk.test.exception.exceptions.RefreshTokenException;
-import karpiuk.test.exception.exceptions.UserAuthenticationException;
+import karpiuk.test.exception.handler.exceptions.RefreshTokenException;
+import karpiuk.test.exception.handler.exceptions.UserAuthenticationException;
 import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
-import karpiuk.test.util.HashUtil;
-import karpiuk.test.util.RedisUtil;
+import karpiuk.test.util.HashProvider;
+import karpiuk.test.util.RedisProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,22 +29,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
     private final StringRedisTemplate redis;
-    private final HashUtil hashUtil;
+    private final HashProvider hashProvider;
 
     public AuthenticationServiceImpl(
             JwtTokenProvider jwtTokenProvider,
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
             JwtTokenProvider tokenProvider,
-            RedisUtil redisUtil,
-            HashUtil hashUtil) {
+            RedisProvider redisProvider,
+            HashProvider hashProvider) {
 
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
-        this.redis = redisUtil.templateForDb(RedisUtil.RedisDb.SECURITY);
-        this.hashUtil = hashUtil;
+        this.redis = redisProvider.templateForDb(RedisProvider.RedisDb.SECURITY);
+        this.hashProvider = hashProvider;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         validateRefreshToken(refreshToken);
 
-        String userEmail = redis.opsForValue().get(hashUtil.hashToSha256(refreshToken));
+        String userEmail = redis.opsForValue().get(hashProvider.hashToSha256(refreshToken));
 
         User user = userRepository.findByEmailIgnoreCaseAndFetchRoles(userEmail).orElseThrow(
                 () -> new RefreshTokenException(INVALID_TOKEN_MESSAGE));

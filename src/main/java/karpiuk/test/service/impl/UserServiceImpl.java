@@ -6,7 +6,7 @@ import java.util.Set;
 import karpiuk.test.dto.request.UserRegistrationRequest;
 import karpiuk.test.dto.response.LoggedInUserResponse;
 import karpiuk.test.dto.response.RegistrationResponse;
-import karpiuk.test.exception.exceptions.RegistrationException;
+import karpiuk.test.exception.handler.exceptions.RegistrationException;
 import karpiuk.test.mapper.UserMapper;
 import karpiuk.test.model.Role;
 import karpiuk.test.model.User;

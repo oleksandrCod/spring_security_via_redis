@@ -1,6 +1,6 @@
 package karpiuk.test.security;
 
-import karpiuk.test.exception.exceptions.UserNotFoundException;
+import karpiuk.test.exception.handler.exceptions.UserNotFoundException;
 import karpiuk.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

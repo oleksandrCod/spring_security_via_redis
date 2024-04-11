@@ -8,7 +8,7 @@ import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import karpiuk.test.service.EmailSender;
 import karpiuk.test.service.ForgotPasswordHandler;
-import karpiuk.test.util.HashUtil;
+import karpiuk.test.util.HashProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ public class ForgotPasswordHandlerImpl implements ForgotPasswordHandler {
     private final ServiceHelper serviceHelper;
     private final EmailSender emailSender;
     private final UserRepository userRepository;
-    private final HashUtil hashUtil;
+    private final HashProvider hashProvider;
     private final StringRedisTemplate redis;
 
     @Value("${spring.security.password-reset.token.length}")
@@ -69,7 +69,7 @@ public class ForgotPasswordHandlerImpl implements ForgotPasswordHandler {
     private String createPasswordResetToken(User user) {
         log.info("Creating password reset token for user: {}", user.getEmail());
 
-        String resetToken = hashUtil.hashToSha256(user);
+        String resetToken = hashProvider.hashToSha256(user);
 
         log.info("Password reset token created for user: {}", user.getEmail());
         return resetToken;

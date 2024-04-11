@@ -1,16 +1,16 @@
-package karpiuk.test.exception;
+package karpiuk.test.exception.handler;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import karpiuk.test.exception.exceptions.EmailConfirmationTokenException;
-import karpiuk.test.exception.exceptions.InvalidJwtTokenException;
-import karpiuk.test.exception.exceptions.InvalidPasswordResetToken;
-import karpiuk.test.exception.exceptions.RefreshTokenException;
-import karpiuk.test.exception.exceptions.RegistrationException;
-import karpiuk.test.exception.exceptions.UserAuthenticationException;
-import karpiuk.test.exception.exceptions.UserNotFoundException;
+import karpiuk.test.exception.handler.exceptions.EmailConfirmationTokenException;
+import karpiuk.test.exception.handler.exceptions.InvalidJwtTokenException;
+import karpiuk.test.exception.handler.exceptions.InvalidPasswordResetToken;
+import karpiuk.test.exception.handler.exceptions.RefreshTokenException;
+import karpiuk.test.exception.handler.exceptions.RegistrationException;
+import karpiuk.test.exception.handler.exceptions.UserAuthenticationException;
+import karpiuk.test.exception.handler.exceptions.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

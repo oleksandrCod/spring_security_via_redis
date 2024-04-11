@@ -8,17 +8,7 @@ import karpiuk.test.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HashUtil {
-    public String hashToSha256(User input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(input.toString().getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encodedHash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to calculate SHA-256 hash", e);
-        }
-    }
-
+public class HashProvider {
     public String hashToSha256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -27,5 +17,9 @@ public class HashUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to calculate SHA-256 hash", e);
         }
+    }
+
+    public String hashToSha256(User input) {
+        return hashToSha256(input.toString());
     }
 }

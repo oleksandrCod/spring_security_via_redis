@@ -8,7 +8,7 @@ import karpiuk.test.model.User;
 import karpiuk.test.repository.UserRepository;
 import karpiuk.test.service.EmailConfirmationService;
 import karpiuk.test.service.EmailSender;
-import karpiuk.test.util.HashUtil;
+import karpiuk.test.util.HashProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     private static final String EMAIL_RESEND_MESSAGE = "Confirmation email was send again!";
 
     private final UserRepository userRepository;
-    private final HashUtil hashUtil;
+    private final HashProvider hashProvider;
     private final StringRedisTemplate redis;
     private final EmailSender emailSender;
     private final ServiceHelper serviceHelper;
@@ -56,7 +56,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
     private String createEmailConfirmationToken(User user) {
         log.debug("Creating email confirmation token for user: {}", user.getEmail());
-        return hashUtil.hashToSha256(user);
+        return hashProvider.hashToSha256(user);
     }
 
     private void sendConfirmationEmail(User user, String confirmationToken) {

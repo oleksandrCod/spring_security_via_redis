@@ -1,6 +1,7 @@
 package karpiuk.test.util;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.util.EnumMap;
 import java.util.Map;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -14,7 +15,7 @@ import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 
 @Component
-public class RedisUtil {
+public class RedisProvider {
 
     private static final String REDIS_CONNECTION_EXCEPTION_MESSAGE =
             "Failed to connect to Redis database. Please recheck Redis settings";
@@ -23,7 +24,7 @@ public class RedisUtil {
     private final int redisPort;
     private final Map<RedisDb, StringRedisTemplate> templateByDb;
 
-    public RedisUtil(
+    public RedisProvider(
             @Value("${spring.data.redis.host}")
             String redisHost,
             @Value("${spring.data.redis.port}")
@@ -42,6 +43,15 @@ public class RedisUtil {
 
     public StringRedisTemplate templateForDb(RedisDb db) {
         return templateByDb.get(db);
+    }
+
+    @PreDestroy
+    public void closeConnections() {
+        templateByDb.forEach((db, template) -> {
+            if (template.getConnectionFactory() != null) {
+                template.getConnectionFactory().getConnection().close();
+            }
+        });
     }
 
     private void createTemplate(RedisDb db) {
