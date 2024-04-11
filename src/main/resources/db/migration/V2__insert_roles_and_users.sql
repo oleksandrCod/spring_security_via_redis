@@ -15,8 +15,8 @@ VALUES ('alexkarpiuk99@gmail.com', '$2a$10$fXK1jneVEQtuwTcUiGzBIudqHi5v6bNC2YCB.
        ('charlie.brown@example.com', '$2a$10$fXK1jneVEQtuwTcUiGzBIudqHi5v6bNC2YCB.NycjSxv4GKzF3E4a', 'Charlie', 'Brown',
         NULL, '1', '0');
 INSERT INTO user_roles(user_id, role_id)
-VALUES (1, 1),
-       (1, 1),
-       (1, 1),
-       (1, 1),
-       (1, 1);
+VALUES (1, 2),
+       (2, 1),
+       (3, 1),
+       (4, 1),
+       (5, 1);
